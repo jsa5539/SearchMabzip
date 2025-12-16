@@ -2,9 +2,11 @@ package app.dku.searchmabzip;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,9 +14,15 @@ import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -25,14 +33,23 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ChartActivity extends BaseActivity {
 
     private static final String TAG = "ChartActivity";
+    private static final String[] DEFAULT_KEYWORDS = new String[]{
+            "죽전 맛집",
+            "용인 죽전 맛집",
+            "경기 수원 맛집",
+            "서울 강남역 맛집"
+    };
 
-    // Kakao REST API service
     private KakaoLocalApiService apiService;
+    private RatingRepository ratingRepository;
+    private RatedRestaurantAdapter ratedAdapter;
+    private RecyclerView ratedRecyclerView;
+    private TextView ratedEmptyText;
+    private View ratedListContainer;
 
-    // 결과 취합 리스트
-    private List<PlaceDocument> combinedRestaurantList = new ArrayList<>();
+    private final List<PlaceDocument> combinedRestaurantList = new ArrayList<>();
     private int searchCompletedCount = 0;
-    private final int TOTAL_SEARCHES = 4; // MainActivity와 동일하게 4회 검색
+    private int totalSearches = DEFAULT_KEYWORDS.length;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,31 +63,12 @@ public class ChartActivity extends BaseActivity {
             return insets;
         });
 
-        // 예산/선호도 텍스트 표기
-        AppDataManager dm = AppDataManager.getInstance();
-        int budget = dm.getUserBudget();
+        ratingRepository = new RatingRepository(this);
+        renderCategoryChart();
+        setupRatedListBox();
 
-        TextView textBudget = findViewById(R.id.textBudget);
-        if (textBudget != null) {
-            textBudget.setText("예산: " + budget + "원");
-        }
-
-        double rating = dm.getRatingFilterValue();
-        int progress = dm.getSeekBarProgress();
-        boolean switchOn = dm.getSwitchState();
-
-        TextView textPreferences = findViewById(R.id.textPreferences);
-        if (textPreferences != null) {
-            String summary = "선호도: 평점 " + String.format("%.1f", rating)
-                    + ", 일동안 먹은 음식 제외 " + progress
-                    + ",  동일 계열 메뉴 제외" + (switchOn ? "켜짐" : "꺼짐");
-            textPreferences.setText(summary);
-        }
-
-        // Retrofit 초기화
         initRetrofit();
 
-        // NEXT 버튼: API 호출 후 MabzipList로 이동
         Button nextButton = findViewById(R.id.newbtn);
         if (nextButton != null) {
             nextButton.setOnClickListener(new View.OnClickListener() {
@@ -78,32 +76,177 @@ public class ChartActivity extends BaseActivity {
                 public void onClick(View v) {
                     combinedRestaurantList.clear();
                     searchCompletedCount = 0;
+                    totalSearches = DEFAULT_KEYWORDS.length;
 
                     Toast.makeText(ChartActivity.this, "음식점 정보를 검색합니다...", Toast.LENGTH_SHORT).show();
 
-                    // MainActivity와 비슷한 키워드로 4회 검색
-                    searchRestaurantList("단국대 죽전 캠퍼스 근처 음식점");
-                    searchRestaurantList("죽전 맛집");
-                    searchRestaurantList("단국대 앞 맛집");
-                    searchRestaurantList("경기 용인시 수지구 죽전동 맛집");
+                    for (String keyword : DEFAULT_KEYWORDS) {
+                        searchRestaurantList(keyword);
+                    }
                 }
             });
         }
     }
 
-    // --- Retrofit 초기화 ---
+    private void setupRatedListBox() {
+        View box = findViewById(R.id.ratedListBox);
+        ratedListContainer = findViewById(R.id.ratedListContainer);
+        ratedRecyclerView = findViewById(R.id.ratedRecyclerViewInline);
+        ratedEmptyText = findViewById(R.id.ratedInlineEmpty);
+
+        if (ratedRecyclerView != null) {
+            ratedAdapter = new RatedRestaurantAdapter(this, new RatedRestaurantAdapter.OnRatingEditedListener() {
+                @Override
+                public void onRatingChanged(RatedRestaurantAdapter.RatedPlaceItem item, int rating) {
+                    ratingRepository.saveRating(item.getPlaceId(), item.getCategoryName(), rating, () -> {
+                        RatedPlaceStore.savePlaceMeta(ChartActivity.this, item.getPlaceId(), item.getDisplayName(), item.getCategoryName());
+                        ratedAdapter.updateRating(item.getPlaceId(), rating);
+                        renderCategoryChart();
+                        Toast.makeText(ChartActivity.this, "별점이 저장되었습니다.", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+            ratedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            ratedRecyclerView.setAdapter(ratedAdapter);
+        }
+
+        if (box == null) {
+            return;
+        }
+        box.setOnClickListener(v -> ratingRepository.loadAllRatings(ratings -> {
+            if (ratedListContainer != null && ratedListContainer.getVisibility() == View.VISIBLE) {
+                toggleRatedVisibility(false);
+                return;
+            }
+            if (ratings.isEmpty()) {
+                toggleRatedVisibility(false);
+                toggleRatedEmpty(true);
+                return;
+            }
+            List<RatedRestaurantAdapter.RatedPlaceItem> items = new ArrayList<>();
+            for (PlaceRating rating : ratings.values()) {
+                RatedPlaceStore.RatedPlaceMeta meta = RatedPlaceStore.getMeta(this, rating.getPlaceId());
+                String name = meta != null && !TextUtils.isEmpty(meta.getPlaceName()) ? meta.getPlaceName() : "이름 정보 없음";
+                String categoryName = meta != null && !TextUtils.isEmpty(meta.getCategoryName())
+                        ? meta.getCategoryName()
+                        : rating.getCategoryName();
+                items.add(new RatedRestaurantAdapter.RatedPlaceItem(
+                        rating.getPlaceId(),
+                        name,
+                        categoryName,
+                        rating.getRating(),
+                        rating.getSavedAt()
+                ));
+            }
+            items.sort(Comparator.comparingLong(RatedRestaurantAdapter.RatedPlaceItem::getSavedAt).reversed());
+            if (ratedAdapter != null) {
+                ratedAdapter.setItems(items);
+            }
+            toggleRatedEmpty(items.isEmpty());
+            toggleRatedVisibility(true);
+        }));
+    }
+
+    private void toggleRatedEmpty(boolean empty) {
+        if (ratedEmptyText != null) {
+            ratedEmptyText.setVisibility(empty ? View.VISIBLE : View.GONE);
+        }
+        if (ratedRecyclerView != null) {
+            ratedRecyclerView.setVisibility(empty ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private void toggleRatedVisibility(boolean show) {
+        if (ratedListContainer != null) {
+            ratedListContainer.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void renderCategoryChart() {
+        LinearLayout container = findViewById(R.id.ratingChartContainer);
+        if (container == null) return;
+
+        ratingRepository.loadAllRatings(ratings -> {
+            container.removeAllViews();
+            if (ratings.isEmpty()) {
+                TextView empty = new TextView(this);
+                empty.setText("저장된 별점이 없습니다.");
+                container.addView(empty);
+                return;
+            }
+
+            Map<String, CategoryStat> statMap = new HashMap<>();
+            for (PlaceRating rating : ratings.values()) {
+                String cat = extractMainCategory(rating.getCategoryName());
+                if (cat.isEmpty()) cat = "기타";
+                CategoryStat stat = statMap.getOrDefault(cat, new CategoryStat());
+                stat.count += 1;
+                stat.sum += rating.getRating();
+                statMap.put(cat, stat);
+            }
+
+            int maxCount = 1;
+            for (CategoryStat stat : statMap.values()) {
+                if (stat.count > maxCount) maxCount = stat.count;
+            }
+
+            for (Map.Entry<String, CategoryStat> entry : statMap.entrySet()) {
+                String cat = entry.getKey();
+                CategoryStat stat = entry.getValue();
+                double avg = stat.sum / stat.count;
+
+                View row = getLayoutInflater().inflate(R.layout.view_chart_row, container, false);
+                TextView title = row.findViewById(R.id.chart_row_title);
+                TextView meta = row.findViewById(R.id.chart_row_meta);
+                View bar = row.findViewById(R.id.chart_row_bar);
+                View spacer = row.findViewById(R.id.chart_row_spacer);
+
+                title.setText(cat);
+                meta.setText(String.format(Locale.getDefault(), "평균 %.1f점 · %d곳", avg, stat.count));
+
+                int percent = (int) (100f * stat.count / maxCount);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, dpToPx(12), percent);
+                bar.setLayoutParams(params);
+                LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, dpToPx(12), 100 - percent);
+                spacer.setLayoutParams(spacerParams);
+
+                container.addView(row);
+            }
+        });
+    }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
+
+    private String extractMainCategory(String fullCategoryName) {
+        if (fullCategoryName == null || fullCategoryName.isEmpty()) {
+            return "";
+        }
+        String[] parts = fullCategoryName.split(">");
+        if (parts.length < 2) {
+            return parts[0].trim();
+        }
+        return parts[1].trim();
+    }
+
+    private static class CategoryStat {
+        int count = 0;
+        double sum = 0.0;
+    }
+
     private void initRetrofit() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://dapi.kakao.com/") // Kakao Local API base URL
+                .baseUrl("https://dapi.kakao.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         apiService = retrofit.create(KakaoLocalApiService.class);
     }
 
-    // --- API 호출 ---
     private void searchRestaurantList(String keyword) {
         String authHeader = "KakaoAK " + getString(R.string.kakao_rest_api_key);
-        String restaurantCode = "FD6"; // 음식점 카테고리
+        String restaurantCode = "FD6";
 
         apiService.searchPlaces(authHeader, keyword, restaurantCode)
                 .enqueue(new Callback<KakaoPlaceResponse>() {
@@ -113,28 +256,26 @@ public class ChartActivity extends BaseActivity {
                             List<PlaceDocument> resultList = response.body().getDocuments();
                             processResult(resultList);
                         } else {
-                            Log.e(TAG, "응답 실패: " + response.code() + " - 키워드: " + keyword);
+                            Log.e(TAG, "응답 실패: " + response.code() + " - 검색어: " + keyword);
                             processResult(new ArrayList<>());
                         }
                     }
 
                     @Override
                     public void onFailure(Call<KakaoPlaceResponse> call, Throwable t) {
-                        Log.e(TAG, "네트워크 실패: " + t.getMessage() + " - 키워드: " + keyword);
+                        Log.e(TAG, "네트워크 실패: " + t.getMessage() + " - 검색어: " + keyword);
                         processResult(new ArrayList<>());
                     }
                 });
     }
 
-    // --- 결과 취합 후 다음 화면 이동 ---
     private synchronized void processResult(List<PlaceDocument> resultList) {
         combinedRestaurantList.addAll(resultList);
         searchCompletedCount++;
 
-        if (searchCompletedCount == TOTAL_SEARCHES) {
+        if (searchCompletedCount == totalSearches) {
             Log.d(TAG, "모든 검색 완료. 총 결과: " + combinedRestaurantList.size());
 
-            // Cache results to avoid serialization issues
             ResultCache.lastResults = new ArrayList<>(combinedRestaurantList);
 
             Intent intent = new Intent(ChartActivity.this, MabzipList.class);
@@ -142,4 +283,3 @@ public class ChartActivity extends BaseActivity {
         }
     }
 }
-

@@ -2,6 +2,7 @@ package app.dku.searchmabzip;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.widget.Button;
 import android.widget.RatingBar;
 import android.widget.SeekBar;
@@ -13,7 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import org.w3c.dom.Text;
+import java.util.Date;
 
 public class Setting extends BaseActivity  {
 
@@ -40,7 +41,6 @@ public class Setting extends BaseActivity  {
         TextView textView2 = findViewById(R.id.textView2);
         TextView textView3 = findViewById(R.id.textView3);
         TextView textView13 = findViewById(R.id.textView13);
-        TextView textView10 = findViewById(R.id.textView10);
         Button pre = findViewById(R.id.pre);
         // === SeekBar ===
         SeekBar seekBar2 = findViewById(R.id.seekBar2);
@@ -79,6 +79,7 @@ public class Setting extends BaseActivity  {
             // ⭐ SharedPreferences 대신 AppDataManager에 저장
             dataManager.setSwitchState(isChecked);
         });
+
 
         // 4. 이전 버튼 (Pre) 로직
         pre.setOnClickListener(v -> {

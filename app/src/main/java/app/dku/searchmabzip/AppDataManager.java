@@ -14,9 +14,6 @@ public class AppDataManager {
     // 0~5 값을 저장하는 데이터 (예: 평점 필터)
     private double ratingFilterValue = 0.0;
 
-    // 예산을 저장하는 데이터
-    private int userBudget = 0;
-
     // ⭐ 추가: SeekBar의 진행도 (Progress) 값
     private int seekBarProgress = 0;
 
@@ -42,15 +39,6 @@ public class AppDataManager {
     }
 
     // --- Getter와 Setter ---
-
-    // 예산 데이터
-    public int getUserBudget() {
-        return userBudget;
-    }
-
-    public void setUserBudget(int userBudget) {
-        this.userBudget = userBudget;
-    }
 
     // 평점 데이터 (0.0 ~ 5.0)
     public double getRatingFilterValue() {

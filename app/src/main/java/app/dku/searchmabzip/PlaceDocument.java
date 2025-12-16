@@ -3,6 +3,9 @@ package app.dku.searchmabzip;
 
 public class PlaceDocument {
 
+    @com.google.gson.annotations.SerializedName("id")
+    private String id;
+
     @com.google.gson.annotations.SerializedName("place_name")
     private String placeName;
 
@@ -14,6 +17,14 @@ public class PlaceDocument {
 
     @com.google.gson.annotations.SerializedName("category_name")
     private String categoryName; // Kakao API의 상세 카테고리 정보
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getPlaceName() {
         return placeName;

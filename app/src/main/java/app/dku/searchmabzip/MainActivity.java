@@ -3,12 +3,9 @@ package app.dku.searchmabzip;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -27,8 +24,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 // BaseActivity 를 상속받아 사용
 public class MainActivity extends BaseActivity {
-
-    int save_yesan = 0;
 
     // Kakao REST API service
     private KakaoLocalApiService apiService;
@@ -72,42 +67,7 @@ public class MainActivity extends BaseActivity {
 
         // --- UI 요소 초기화 ---
         Button newbtn = findViewById(R.id.newbtn);
-        Button input = findViewById(R.id.inputValue);
-        EditText edit = findViewById(R.id.editTextNumberSigned);
         ImageButton setting = findViewById(R.id.set);
-        TextView yesantext = findViewById(R.id.yesanText);
-        Button random = findViewById(R.id.button2);
-
-        // AppDataManager 인스턴스 확보
-        final AppDataManager dataManager = AppDataManager.getInstance();
-
-        // --- 입력 버튼 로직 ---
-        input.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String text = edit.getText().toString().trim();
-                if (text.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "숫자를 입력하세요", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                try {
-                    save_yesan = Integer.parseInt(text);
-                    dataManager.setUserBudget(save_yesan);
-                    Toast.makeText(MainActivity.this, "예산 저장됨: " + save_yesan, Toast.LENGTH_SHORT).show();
-                } catch (NumberFormatException e) {
-                    Toast.makeText(MainActivity.this, "올바른 숫자를 입력하세요", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        // --- 엔터 입력 처리 ---
-        edit.setOnKeyListener((v, keyCode, event) -> {
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-                input.performClick();
-                return true;
-            }
-            return false;
-        });
 
         // --- 설정 버튼 ---
         setting.setOnClickListener(v -> {
@@ -132,6 +92,7 @@ public class MainActivity extends BaseActivity {
             searchRestaurantList("경기 용인시 수지구 죽전로");
         });
     }
+    //나중에 gps로 구현으로 바꿀 예정.
 
     // --- Retrofit 초기화 ---
     private void initRetrofit() {
