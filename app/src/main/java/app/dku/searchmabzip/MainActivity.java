@@ -23,6 +23,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 // BaseActivity 를 상속받아 사용
+//진짜 커밋여러번 가능? 이거 1번.
 public class MainActivity extends BaseActivity {
 
     // Kakao REST API service
