@@ -34,10 +34,10 @@ public class ChartActivity extends BaseActivity {
 
     private static final String TAG = "ChartActivity";
     private static final String[] DEFAULT_KEYWORDS = new String[]{
-            "죽전 맛집",
-            "용인 죽전 맛집",
-            "경기 수원 맛집",
-            "서울 강남역 맛집"
+            "용인시 죽전동 단국대 근처 음식점",
+            "단국대",
+            "단국대학교",
+            "경기 용인시 수지구 죽전로"
     };
 
     private KakaoLocalApiService apiService;

@@ -23,7 +23,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 // BaseActivity 를 상속받아 사용
-//진짜 커밋여러번 가능? 이거 1번.2qjs
 public class MainActivity extends BaseActivity {
 
     // Kakao REST API service
@@ -34,6 +33,13 @@ public class MainActivity extends BaseActivity {
     private int searchCompletedCount = 0;
     private final int TOTAL_SEARCHES = 4; // 총 2개의 키워드 검색
     private static final String TAG = "MainActivity"; // 로그 태그
+    private static final String[] DEFAULT_KEYWORDS = new String[]{
+            "용인시 죽전동 단국대 근처 음식점",
+            "단국대",
+            "단국대학교",
+            "경기 용인시 수지구 죽전로"
+    };
+    private int totalSearches = DEFAULT_KEYWORDS.length;
 
     private void getAppKeyHash() {
         try {
@@ -54,6 +60,7 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getAppKeyHash();
+
         EdgeToEdge.enable(this);
         setContentLayout(R.layout.activity_main);
 
@@ -77,6 +84,7 @@ public class MainActivity extends BaseActivity {
         });
 
         // NEXT 버튼: API 호출 후 MabzipList로 이동
+        /*
         newbtn.setOnClickListener(v-> {
             combinedRestaurantList.clear();
             searchCompletedCount = 0;
@@ -87,12 +95,29 @@ public class MainActivity extends BaseActivity {
             searchRestaurantList("용인시 죽전동 단국대 근처 음식점");
 
             searchRestaurantList("단국대");
-            
+
             searchRestaurantList("단국대학교");
 
             searchRestaurantList("경기 용인시 수지구 죽전로");
         });
+    }*/        if (newbtn != null) {
+            newbtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    combinedRestaurantList.clear();
+                    searchCompletedCount = 0;
+                    totalSearches = DEFAULT_KEYWORDS.length;
+
+                    Toast.makeText(MainActivity.this, "음식점 정보를 검색합니다...", Toast.LENGTH_SHORT).show();
+
+                    for (String keyword : DEFAULT_KEYWORDS) {
+                        searchRestaurantList(keyword);
+                    }
+                }
+            });
+        }
     }
+
     //나중에 gps로 구현으로 바꿀 예정.
 
     // --- Retrofit 초기화 ---
