@@ -245,7 +245,7 @@ public class ChartActivity extends BaseActivity {
     }
 
     private void searchRestaurantList(String keyword) {
-        String authHeader = "KakaoAK " + getString(R.string.kakao_rest_api_key);
+        String authHeader = "KakaoAK " + BuildConfig.KAKAO_REST_API_KEY;
         String restaurantCode = "FD6";
 
         apiService.searchPlaces(authHeader, keyword, restaurantCode)

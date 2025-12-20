@@ -39,9 +39,9 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="NEXT"
-            android:textSize="15sp"
-            android:backgroundTint="@color/black" />
+            android:backgroundTint="@color/black"
+            android:text="Search"
+            android:textSize="15sp" />
 
         <ImageButton
             android:id="@+id/chartbtn"

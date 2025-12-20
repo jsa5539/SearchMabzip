@@ -22,6 +22,9 @@
             android:name=".MabzipList"
             android:exported="false" />
         <activity
+            android:name=".RandomPickActivity"
+            android:exported="false" />
+        <activity
             android:name=".Setting"
             android:exported="false" />
         <activity

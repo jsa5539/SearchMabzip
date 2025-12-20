@@ -1,16 +1,7 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
-
-// Load Kakao REST API key from local.properties
-// Load Kakao REST API key from local.properties
-val localProps = Properties().apply { // ✅ 'java.util.'을 제거하고 Properties()만 사용합니다.
-    val f = rootProject.file("local.properties")
-    if (f.exists()) f.inputStream().use { load(it) }
-}
-val kakaoRestKey: String = (localProps.getProperty("KAKAO_REST_API_KEY") ?: "").trim()
 
 android {
     namespace = "app.dku.searchmabzip"
@@ -24,9 +15,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // Expose Kakao REST key as a string resource
-        resValue("string", "kakao_rest_api_key", kakaoRestKey)
     }
 
     buildTypes {
@@ -71,4 +59,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }

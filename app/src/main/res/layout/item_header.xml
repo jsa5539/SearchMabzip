@@ -18,7 +18,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:text="음식점 이름"/>
+            android:text="식당 이름"/>
 
         <TextView
             android:id="@+id/tv_categories"
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="@android:color/darker_gray"
-            android:text="#한식 #분식"/>
+            android:text="#카테고리"/>
 
     </LinearLayout>
 </LinearLayout>

@@ -41,7 +41,7 @@ public class MabzipList extends BaseActivity {
         TextView prefText = findViewById(R.id.text_preferences_summary);
         if (prefText != null) {
             String summary = "평점 " + String.format("%.1f", rating) +"미만 제외\n"
-                    + progress +"일동안 먹은 음식 제외 " + "\n"
+                    + progress +"일동안 먹은 음식 제외 " + (switchOn ? "켜짐" : "꺼짐") +"\n"
                     + "동일 계열 메뉴 제외 " + (switchOn ? "켜짐" : "꺼짐");
             prefText.setText(summary);
         }

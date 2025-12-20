@@ -12,21 +12,45 @@
         android:layout_height="60dp"
         android:layout_marginEnd="16dp"
         android:scaleType="centerCrop"
-        android:contentDescription="음식점 사진" />
+        android:contentDescription="Restaurant photo" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_restaurant_name"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:text="음식점 이름" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_restaurant_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:text="Restaurant name" />
+
+            <TextView
+                android:id="@+id/tv_recommend_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@android:color/holo_orange_dark"
+                android:text="★추천"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_categories"
@@ -34,15 +58,17 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="@android:color/darker_gray"
-            android:text="#한식 #분식" />
+            android:text="#category" />
 
-        <TextView
-            android:id="@+id/tv_rating"
+        <RatingBar
+            android:id="@+id/rating_bar_display"
+            style="?android:attr/ratingBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="별점: 없음"
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_orange_dark"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="4dp"
+            android:isIndicator="true"
+            android:numStars="5"
+            android:stepSize="1"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

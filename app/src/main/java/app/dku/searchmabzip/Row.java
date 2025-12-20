@@ -1,19 +1,19 @@
 package app.dku.searchmabzip;
 
-// RecyclerView에 표시될 아이템의 타입을 정의하는 추상 클래스
+// RecyclerView 행 모델: 헤더(음식점)와 메뉴 아이템
 public abstract class Row {
-    public static final int TYPE_HEADER = 1; // 음식점 (헤더)
+    public static final int TYPE_HEADER = 1; // 음식점 헤더
     public static final int TYPE_MENU = 2;   // 메뉴 아이템
 
     public abstract int getType();
 
-    // 3-1. Header 클래스: 음식점 이름과 사진 URL
+    // Header: 음식점 이름/사진/카테고리
     public static class Header extends Row {
-        private String restaurantName;
-        private String photoUrl;
-        private String categories; // 새로 추가: 카테고리 태그 문자열
+        private final String restaurantName;
+        private final String photoUrl;
+        private final String categories;
 
-        public Header(String restaurantName, String photoUrl, String categories) { // 생성자 수정
+        public Header(String restaurantName, String photoUrl, String categories) {
             this.restaurantName = restaurantName;
             this.photoUrl = photoUrl;
             this.categories = categories;
@@ -26,10 +26,10 @@ public abstract class Row {
         public String getCategories() { return categories; }
     }
 
-    // 3-2. Menu 클래스: 메뉴 이름과 가격
+    // Menu: 메뉴 이름과 가격
     public static class Menu extends Row {
-        private String name;
-        private int price;
+        private final String name;
+        private final int price;
 
         public Menu(String name, int price) {
             this.name = name;
