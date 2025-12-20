@@ -1,6 +1,8 @@
 package app.dku.searchmabzip;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -46,5 +48,18 @@ public class BaseActivity extends AppCompatActivity {
         getLayoutInflater().inflate(layoutId, container, true);
     }
 
+    protected String getKakaoRestKey() {
+        try {
+            ApplicationInfo appInfo = getPackageManager()
+                    .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            if (appInfo.metaData == null) {
+                return "";
+            }
+            String key = appInfo.metaData.getString("KAKAO_REST_API_KEY");
+            return key == null ? "" : key.trim();
+        } catch (PackageManager.NameNotFoundException e) {
+            return "";
+        }
+    }
 
 }

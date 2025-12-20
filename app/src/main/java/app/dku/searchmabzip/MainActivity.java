@@ -123,7 +123,7 @@ public class MainActivity extends BaseActivity {
 
     // --- API 호출 ---
     private void searchRestaurantList(String keyword) {
-        String authHeader = "KakaoAK " + BuildConfig.KAKAO_REST_API_KEY;
+        String authHeader = "KakaoAK " + getKakaoRestKey();
         String restaurantCode = "FD6"; // 음식점 카테고리
 
         apiService.searchPlaces(authHeader, keyword, restaurantCode)

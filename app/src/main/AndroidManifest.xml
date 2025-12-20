@@ -12,6 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SearchMabzip">
+        <meta-data
+            android:name="KAKAO_REST_API_KEY"
+            android:value="${KAKAO_REST_API_KEY}" />
         <activity
             android:name=".ChartActivity"
             android:exported="false" />
